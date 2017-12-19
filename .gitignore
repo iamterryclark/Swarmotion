@@ -4,3 +4,5 @@ Project.xcconfig
 config.make
 openFrameworks-Info.plist
 /Swarmotion.xcodeproj
+/DFOSoundDebug.app/Contents
+/Swarmotion.app/Contents
