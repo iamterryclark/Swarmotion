@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofSetFrameRate(6);
+    ofSetFrameRate(60);
     ofSetVerticalSync(false);
     ofSetLogLevel(OF_LOG_NOTICE);
     
@@ -66,9 +66,11 @@ void ofApp::update(){
             case 0:
                 //Only need .getColor().r and .getColour.g from "velocityPix", as this is equal to x and y of velocity
                 dfo.find(velocityPix);
+                siAlgo.setName("DFO");
                 break;
             case 1:
                 pso.update(velocityPix);
+                siAlgo.setName("PSO");
                 break;
         }
     }

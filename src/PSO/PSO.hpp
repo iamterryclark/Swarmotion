@@ -12,11 +12,11 @@
 class PSO {
 private:
     vector<Particle *> particles;
-    ofVec2f globalBest;
+    vector<double> globalBest = {0.0, 0.0};
     float sound;
     double X = 0.72984;
     double c1 = X * (2.1/2);
-    double c2 = X * (2.1/2);
+    double c2 = c1;
     
 public:
     ofParameterGroup parameters;
@@ -25,9 +25,9 @@ public:
     PSO(int population){
 
         for (int i = 0; i < population; i++){
-            particles.push_back(new Particle());
-            particles[i]->pos.x = ofRandom(0, 120);
-            particles[i]->pos.y = ofRandom(0, 90);
+            particles.push_back(new Particle(2));
+            particles[i]->setPos(0, ofRandom(0, 120));
+            particles[i]->setPos(1, ofRandom(0, 90));
         }
         
         parameters.setName("PSO Params");
@@ -40,37 +40,36 @@ public:
         for(auto & p : particles){
             
             // Calculate fitness value
-            p->fitness      = evaluate( searchSpace.getColor(p->pos.x, p->pos.y) );
-            p->pBestFitness = evaluate( searchSpace.getColor(p->personalBest.x, p->personalBest.y) );
-            p->gBestFitness = evaluate( searchSpace.getColor(globalBest.x, globalBest.y) );
+            p->setFitness( evaluate( searchSpace.getColor(p->getPos()[0], p->getPos()[1]) ) );
+            p->setPBestFitness( evaluate( searchSpace.getColor(p->getPBest()[0], p->getPBest()[1]) ) );
+            p->setGBestFitness( evaluate( searchSpace.getColor(globalBest[0], globalBest[1]) ) );
             
             // If the fitness value is better than the best fitness value (pBest) in history
             // set current value as the new pBest
-            if (p->fitness <= p->pBestFitness ){
-                p->personalBest = p->pos;
+            if (p->getFitness() <= p->getPBestFitness() ){
+                p->setPBest(p->getPos());
             }
             
-            if (p->pBestFitness <= p->gBestFitness){
-                globalBest = p->personalBest;
+            if (p->getPBestFitness() <= p->getGBestFitness()){
+                globalBest = p->getPBest();
             }
         }
         
         for (auto & p : particles){
             //Standard PSO Variation using contriction which will locate one optima and then become static
-            p->vel.x = X * p->vel.x + c1 * ofRandom(0, 1) * (p->personalBest.x - p->pos.x) + c2 * ofRandom(0,1) * (globalBest.x - p->pos.x);
-            p->vel.y = X * p->vel.y + c1 * ofRandom(0, 1) * (p->personalBest.y - p->pos.y) + c2 * ofRandom(0,1) * (globalBest.y - p->pos.y);
-
-            p->pos.x += p->vel.x;
-            p->pos.y += p->vel.y;
+            for (int d = 0; d < p->getDimensions(); d++){
+                p->setVel(d, X * p->getVel()[d] + c1 * ofRandom(1) * (p->getPBest()[d] - p->getPos()[d]) + c2 * ofRandom(1) * (globalBest[d] - p->getPos()[d]));
+                p->setPos(d, p->getPos()[d] + p->getVel()[d] );
+            }
             
             //Taken from the DFO algorith of using a disturbance threshold to improve diversity
             if (ofRandom(1) < dt){
-                p->pos.x = ofRandom(0, searchSpace.getWidth());
-                p->pos.y = ofRandom(0, searchSpace.getHeight());
+                p->setPos(0, ofRandom(0, searchSpace.getWidth()) );
+                p->setPos(1, ofRandom(0, searchSpace.getHeight()) );
             }
         
-            p->pos.x = ofClamp(p->pos.x, 0, searchSpace.getWidth());
-            p->pos.y = ofClamp(p->pos.y, 0, searchSpace.getHeight());
+            p->setPos(0, ofClamp(p->getPos()[0], 0, searchSpace.getWidth()) );
+            p->setPos(1, ofClamp(p->getPos()[1], 0, searchSpace.getHeight()) );
         }
     }
     
@@ -84,10 +83,10 @@ public:
     
     void draw(ofPixels &searchSpace){
         for(auto & p : particles){
-            float mappedPosX = ofMap(p->pos.x, 0, searchSpace.getWidth(), 0, 480);
-            float mappedPosY = ofMap(p->pos.y, 0, searchSpace.getHeight(), 0, 360);
-            float mappedPBestPosX = ofMap(p->personalBest.x, 0, searchSpace.getWidth(), 0, 480);
-            float mappedPBestPosY = ofMap(p->personalBest.y, 0, searchSpace.getHeight(), 0, 360);
+            float mappedPosX = ofMap(p->getPos()[0], 0, searchSpace.getWidth(), 0, 480);
+            float mappedPosY = ofMap(p->getPos()[1], 0, searchSpace.getHeight(), 0, 360);
+            float mappedPBestPosX = ofMap(p->getPBest()[0], 0, searchSpace.getWidth(), 0, 480);
+            float mappedPBestPosY = ofMap(p->getPBest()[1], 0, searchSpace.getHeight(), 0, 360);
 
             ofPushStyle();
                 ofSetColor(255,0,0);
@@ -98,8 +97,8 @@ public:
             ofPopStyle();
         }
         
-        float mappedGBestPosX = ofMap(globalBest.x, 0, searchSpace.getWidth(), 0, 480);
-        float mappedGBestPosY = ofMap(globalBest.y, 0, searchSpace.getHeight(), 0, 360);
+        float mappedGBestPosX = ofMap(globalBest[0], 0, searchSpace.getWidth(), 0, 480);
+        float mappedGBestPosY = ofMap(globalBest[1], 0, searchSpace.getHeight(), 0, 360);
         
         ofPushStyle();
             ofSetColor(0,255,0);
@@ -111,7 +110,7 @@ public:
         sound = 0.0;
         
         for (int i = 0 ; i < particles.size(); i++){
-            ofVec2f dist = particles[i]->getDistance2vec(globalBest);
+            ofVec2f dist = particles[i]->getDistance2Vec(globalBest);
             //float bestPosX = globalBest.x;
             //float bestFitness = gBestfitness;
             

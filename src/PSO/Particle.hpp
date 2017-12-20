@@ -8,39 +8,55 @@
 #include "ofMain.h"
 #include "ofxMaxim.h"
 
-class Particle {
-public:
-    ofVec2f pos;
-    ofVec2f vel;
-    ofVec2f personalBest;
-    double fitness = 0.0;
+class Particle : public SIPoint {
+private:
+    vector<double> vel;
+    vector<double> pBest;
     double pBestFitness = 0.0;
     double gBestFitness = numeric_limits<float>::min();
-    maxiOsc osc;
-    
-    Particle(){
-        pos = ofVec2f(0,0);
-        vel = ofVec2f(0,0);
-        personalBest = vel;
+
+public:
+    Particle(int _dims) : SIPoint(_dims) {
+        for (int d = 0; d < _dims; d++){
+            vel.push_back(0);
+        }
+        pBest = vel;
     }
     
-    double getDistance(ofVec2f globalBestPos){
-        return ofDistSquared(pos.x, pos.y, globalBestPos.x, globalBestPos.y);
+ 
+    vector<double> getVel(){
+        return vel;
     }
     
-    ofVec2f getDistance2vec(ofVec2f globalBestPos){
-        double xDist = pos.x - globalBestPos.x;
-        double yDist = pos.x - globalBestPos.y;
-        return ofVec2f(xDist, yDist);
+    void setVel(vector<double> _newVel){
+        vel = _newVel;
     }
     
-    double output(double param1, double param2){
-//        switch(type){
-//            case 0:
-            return osc.sinewave(param1*param2);
-//            break;
-//        }
+    void setVel(int i, double _newVel){
+        vel[i] = _newVel;
     }
     
+    void setPBest(vector<double> _newPBest){
+        pBest = _newPBest;
+    }
     
+    vector<double> getPBest(){
+        return pBest;
+    }
+    
+    void setPBestFitness(double _newPBestFitness){
+        pBestFitness = _newPBestFitness;
+    }
+    
+    double getPBestFitness(){
+        return pBestFitness;
+    }
+    
+    void setGBestFitness(double _newGBestFitness){
+        gBestFitness = _newGBestFitness;
+    }
+    
+    double getGBestFitness(){
+        return gBestFitness;
+    }
 };

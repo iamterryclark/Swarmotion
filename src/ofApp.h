@@ -11,7 +11,7 @@
 
 using namespace flowTools;
 
-class ofApp : public ofBaseApp{
+class ofApp : public ofBaseApp {
 
 	public:
 		void setup();
