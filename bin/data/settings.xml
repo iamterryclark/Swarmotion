@@ -1,20 +1,15 @@
 <group>
 	<optical_flow>
 		<strength>100</strength>
-		<offset>1</offset>
-		<lambda>0.1</lambda>
-		<threshold>0.0204082</threshold>
+		<offset>3</offset>
+		<lambda>0.01</lambda>
+		<threshold>0.183673</threshold>
 		<inverse_x>0</inverse_x>
 		<inverse_y>0</inverse_y>
 		<time_decay_blur>
-			<decay>2.19075</decay>
-			<blur_radius>10</blur_radius>
+			<decay>5.05414</decay>
+			<blur_radius>7.60516</blur_radius>
 		</time_decay_blur>
 	</optical_flow>
 <group/>
-<DFO_Params>
-		<Disturbance>0.0163265</Disturbance>
-		<Topology>0</Topology>
-	<Ring_Topology>0</Ring_Topology>
-	</DFO_Params>
 </group>

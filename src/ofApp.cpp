@@ -24,23 +24,40 @@ void ofApp::setup(){
     cameraFbo.allocate(drawWidth, drawHeight);
     cameraFbo.black();
     
-    // GUI
-    gui.setup("Optical Flow");
-    gui.setPosition(0,0);
-    gui.minimizeAll();
+    // GUISetup
+    guiMotionTrack.setup();
+    guiMotionTrack.add(opticalFlow.parameters);
+    guiMotionTrack.setDefaultWidth(200);
+    guiMotionTrack.setPosition(0,0);
     
-    gui.add(siAlgo.set("Algorithm", 0, 0, 1));
-    gui.add(opticalFlow.parameters);
-    gui.add(dfo.parameters);
-    gui.add(pso.parameters);
+    gui = new ofxDatGui( ofxDatGuiAnchor::TOP_RIGHT );
+    gui->setAssetPath("");
+    
+    gui->addHeader(":: Swarmotion Parameters ::");
+    gui->setPosition(0,230);
+    gui->setWidth(200);
+    
+    //Gui Switch Algo
+    vector<string> algoOptions = { "DFO", "PSO"};
+    gui->addDropdown("Pick Algorithm", algoOptions);
+    gui->addBreak();
+    vector<string> topOptions = { "Ring Topology", "Random Topology", "Closest Topology" };
+    gui->addDropdown("Select Topology", topOptions);
+    gui->addBreak();
+    gui->addSlider("Disturb", 0.0, 1.0);
+    gui->addFooter();
+    
+    gui->onDropdownEvent(this, &ofApp::onDropdownEvent);
+    gui->onSliderEvent(this, &ofApp::onSliderEvent);
     
     // if the settings file is not present the parameters will not be set during this setup
     if (!ofFile("settings.xml"))
-        gui.saveToFile("settings.xml");
-    gui.loadFromFile("settings.xml");
+        guiMotionTrack.saveToFile("settings.xml");
+    
+    guiMotionTrack.loadFromFile("settings.xml");
     
     //Sound Setup
-    soundStream.setup(this, 2, 0, sampleRate, bufferSize, 1);
+    soundStream.setup(this, 2, 0, sampleRate, bufferSize, 4);
     soundStream.setDeviceID(0);
 }
 
@@ -65,12 +82,10 @@ void ofApp::update(){
         switch(siAlgo){
             case 0:
                 //Only need .getColor().r and .getColour.g from "velocityPix", as this is equal to x and y of velocity
-                dfo.find(velocityPix);
-                siAlgo.setName("DFO");
+                dfo.find(velocityPix, topology, dt);
                 break;
             case 1:
-                pso.update(velocityPix);
-                siAlgo.setName("PSO");
+                pso.find(velocityPix, topology, dt);
                 break;
         }
     }
@@ -80,7 +95,9 @@ void ofApp::update(){
 
 void ofApp::draw(){
     ofBackground(0);
+    
     cameraFbo.draw(200,0, drawWidth, drawHeight);
+    
     ofPushStyle();
     {
         for (int x = 0; x < velocityPix.getWidth(); x++){
@@ -95,17 +112,11 @@ void ofApp::draw(){
     ofPopStyle();
     
     switch(siAlgo){
-        case 0:
-            dfo.render(velocityPix);
-        break;
-        case 1:
-            pso.draw(velocityPix);
-        break;
+        case 0: dfo.render(velocityPix); break;
+        case 1: pso.render(velocityPix); break;
     }
     
-    gui.draw();
-    
- 
+    guiMotionTrack.draw();
 }
 
 //--------------------------------------------------------------
@@ -122,15 +133,17 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
             break;
         }
         
-        double delayedSound = delay.dl(sound, 3000, 0.6);
+        double delayedSound = delay.dl(sound, 2000, 0.8);
         double loresSound = filter.lores(delayedSound, 4000, 0.06);
-        //float distortedSound = foldback(loresSound, 0.3);
+        float distortedSound = foldback(loresSound, 0.04);
 
-        //distortedSound = ofClamp(distortedSound, -1 ,1);
-        loresSound = ofClamp(loresSound , -1, 1);
-        output[i*nChannels] = loresSound * amp;
+        distortedSound = ofClamp(distortedSound, -1 ,1);
+        //loresSound = ofClamp(loresSound , -1, 1);
+        output[i*nChannels] = distortedSound * amp;
         output[i*nChannels + 1] = output[i*nChannels];
     }
+    
+
 }
 
 //--------------------------------------------------------------
@@ -144,6 +157,35 @@ double ofApp::foldback(double in, double threshold){
 }
 
 //--------------------------------------------------------------
+void ofApp::onSliderEvent(ofxDatGuiSliderEvent e){
+    string guiLabel = e.target->getLabel();
+    
+    if(guiLabel == "Disturb"){
+        dt = e.value;
+    }
+}
+
+void ofApp::onDropdownEvent(ofxDatGuiDropdownEvent e)
+{
+    string guiLabel = e.target->getLabel();
+    
+    if( guiLabel == "DFO"){
+        siAlgo = 0;
+    } else if (guiLabel == "PSO") {
+        siAlgo = 1;
+    }
+    
+    if(guiLabel == "Ring Topology"){
+        topology = 0;
+    } else if (guiLabel == "Ring Topology"){
+        topology = 1;
+    } else if (guiLabel == "Closest Topology"){
+        topology = 2;
+    }
+
+}
+
+
+//--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    dfo.keypressed(key);
 }

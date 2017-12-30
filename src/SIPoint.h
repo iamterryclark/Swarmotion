@@ -64,13 +64,13 @@ public:
         return ofVec2f(xDist, yDist);
     }
 
-    double output(double param1, double param2){
+    double output(double param1, double param2, double param3){
         switch(type){
             case 0:
-                return osc.sinewave(param1*param2);
+                return osc.sinewave((param1*param2)*param3);
             break;
         }
-        return -1;
+        return 0;
     }
 };
 

@@ -3,11 +3,12 @@
 #include "ofMain.h"
 #include "ofxMaxim.h"
 #include "ofxFlowTools.h"
+
+#include "ofxDatGui.h"
 #include "ofxGui.h"
+
 #include "DFO.hpp"
 #include "PSO.hpp"
-
-//Reference: Frame Differencing http://openframeworks.cc/ofBook/chapters/image_processing_computer_vision.html
 
 using namespace flowTools;
 
@@ -17,8 +18,13 @@ class ofApp : public ofBaseApp {
 		void setup();
 		void update();
         void draw();
+    
+        void onSliderEvent(ofxDatGuiSliderEvent e);
+        void onDropdownEvent(ofxDatGuiDropdownEvent e);
+    
         void audioOut(float * output, int bufferSize, int nChannels);
         double foldback(double in, double threshold);
+    
 		void keyPressed(int key);
     
         void drawOpticalFlow() {
@@ -45,9 +51,13 @@ class ofApp : public ofBaseApp {
     ftVelocityField velocityField;
     
     // GUI
-    ofxPanel            gui;
-    ofParameterGroup siParams;
-    ofParameter<int> siAlgo;
+    ofxDatGui* gui;
+    ofxPanel guiMotionTrack;
+
+    int siAlgo;
+    int topology;
+    float dt;
+    double y = 0.0;
     
     // Save velocity inti
     ofPixels velocityPix;

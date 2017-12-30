@@ -1,3 +1,4 @@
+ofxDatGui
 ofxFlowTools
 ofxGui
 ofxMaxim
