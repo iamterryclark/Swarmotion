@@ -1,5 +1,8 @@
 # Swarmotion - A comparison of DFO and PSO
 
+![Swarmotion Screen Grab
+](https://github.com/iamterryclark/Swarmotion/blob/master/Swarmotion_Screenshot.png)
+
 ## Definitions
 - DFO - Dispersive Fly Optimisation
 - PSO - Particle Swarm Optimisation
