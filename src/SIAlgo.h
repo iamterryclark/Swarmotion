@@ -13,7 +13,7 @@
 class SIAlgo {
 public:
     
-    virtual void find(ofPixels &searchSpace, int topology, float dt) = 0;
+    virtual void find(ofPixels &searchSpace, int topology, float dt, int isElitest) = 0;
     virtual void render(ofPixels &searchSpace) = 0;
     virtual double output() = 0;
     

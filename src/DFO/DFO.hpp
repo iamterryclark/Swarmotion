@@ -23,12 +23,12 @@ public:
     DFO(int population){
         for (int i = 0 ; i < population; i++){
             swarm.push_back(new Fly(2));
-            swarm[i]->setPos(0, ofRandom(120));
-            swarm[i]->setPos(1, ofRandom(90));
+            swarm[i]->setPos(0, ofRandom(0, 120));
+            swarm[i]->setPos(1, ofRandom(0, 90));
         }
     }
     
-    void find(ofPixels &searchSpace, int topology, float dt){
+    void find(ofPixels &searchSpace, int topology, float dt, int isElitest){
         
         for (auto & fly : swarm){
             //Set the fitness of each fly based on image colour
@@ -128,18 +128,26 @@ public:
             //        endl;
             
             vector<double> newPositions;
-            cout << dt << endl;
+            //cout << dt << endl;
             //Disturb the flies to get a better value than before if a random number is below a threshold
             if (ofRandom(0, 1) < dt){
                 //GetRandom Position in the search space
-                newPositions.push_back( ofRandom(searchSpace.getWidth()-1) );
-                newPositions.push_back( ofRandom(searchSpace.getHeight()-1) );
+                newPositions.push_back( ofRandom(0, searchSpace.getWidth()) );
+                newPositions.push_back( ofRandom(0, searchSpace.getHeight()) );
             } else {
-                //Let the search begin!
-                //The next position is based on this formula
-                //The best Neighbouring position + a random value from 0 to 1 multiplied by the best fly in the swarm take away the current position
-                newPositions.push_back(bestNeighbour.getPos()[0] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[0] - bestNeighbour.getPos()[0]));
-                newPositions.push_back(bestNeighbour.getPos()[1] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[1] - bestNeighbour.getPos()[1]));
+                if (isElitest){
+                    //Let the search begin!
+                    //The next position is based on this formula
+                    //The best Neighbouring position + a random value from 0 to 1 multiplied by the best fly in the swarm take away the current position
+                    newPositions.push_back(bestNeighbour.getPos()[0] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[0] - swarm[bestIndex]->getPos()[0]));
+                    newPositions.push_back(bestNeighbour.getPos()[1] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[1] - swarm[bestIndex]->getPos()[1]));
+                } else if (!isElitest){
+                    //Let the search begin!
+                    //The next position is based on this formula
+                    //The best Neighbouring position + a random value from 0 to 1 multiplied by the best fly in the swarm take away the current position
+                    newPositions.push_back(bestNeighbour.getPos()[0] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[0] - bestNeighbour.getPos()[0]));
+                    newPositions.push_back(bestNeighbour.getPos()[1] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[1] - bestNeighbour.getPos()[1]));
+                }
             }
             
             newPositions[0] = ofClamp(newPositions[0], 0, searchSpace.getWidth()-1);
@@ -155,9 +163,8 @@ public:
     void render(ofPixels &searchSpace){
         ofPushStyle();
         for(int i = 0; i < swarm.size(); i++) {
-            
-            float mappedPosX = ofMap(swarm[i]->getPos()[0], 1, searchSpace.getWidth()-1, 0, 480);
-            float mappedPosY = ofMap(swarm[i]->getPos()[1], 1, searchSpace.getHeight()-1, 0, 360);
+            float mappedPosX = ofMap(swarm[i]->getPos()[0], 0, searchSpace.getWidth(), 0, 480);
+            float mappedPosY = ofMap(swarm[i]->getPos()[1], 0, searchSpace.getHeight(), 0, 360);
             
             if(bestIndex == i){
                 ofSetColor(255,0,0);
@@ -180,12 +187,11 @@ public:
         
         for (int i = 0 ; i < swarm.size(); i++){
             ofVec2f dist = swarm[i]->getDistance2Vec(swarm[bestIndex]->getPos());
-            float bestPosX = swarm[bestIndex]->getPos()[0];
             double bestFitness = swarm[bestIndex]->getFitness();
             
-            dist.x = ofMap(dist.x, 0, ofGetWidth(),  100, 400);
+            dist.x = ofMap(dist.x, 0, ofGetWidth(),  100, 380);
             dist.y = ofMap(dist.y, 0, ofGetHeight(), 10, 100);
-            bestFitness = ofMap(bestFitness, 0, 255, 1,100);
+            bestFitness = ofMap(bestFitness, 0, 255, 0, 100);
             
             sound += swarm[i]->output(dist.x, dist.y, bestFitness);
         }

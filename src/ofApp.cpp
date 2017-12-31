@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofSetFrameRate(60);
+    ofSetFrameRate(50);
     ofSetVerticalSync(false);
     ofSetLogLevel(OF_LOG_NOTICE);
     
@@ -41,10 +41,10 @@ void ofApp::setup(){
     vector<string> algoOptions = { "DFO", "PSO"};
     gui->addDropdown("Pick Algorithm", algoOptions);
     gui->addBreak();
-    vector<string> topOptions = { "Ring Topology", "Random Topology", "Closest Topology" };
+    vector<string> topOptions = { "Ring Topology", "Random Topology", "Closest Topology", "Elitest Approach" };
     gui->addDropdown("Select Topology", topOptions);
     gui->addBreak();
-    gui->addSlider("Disturb", 0.0, 1.0);
+    gui->addSlider("Disturb", 0.001, 0.09, 0.001);
     gui->addFooter();
     
     gui->onDropdownEvent(this, &ofApp::onDropdownEvent);
@@ -82,10 +82,10 @@ void ofApp::update(){
         switch(siAlgo){
             case 0:
                 //Only need .getColor().r and .getColour.g from "velocityPix", as this is equal to x and y of velocity
-                dfo.find(velocityPix, topology, dt);
+                dfo.find(velocityPix, topology, dt, isElitest);
                 break;
             case 1:
-                pso.find(velocityPix, topology, dt);
+                pso.find(velocityPix, topology, dt, isElitest);
                 break;
         }
     }
@@ -121,6 +121,19 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 
+void ofApp::mouseMoved(int x, int y){
+    double mappedX = ofMap(x, 0, ofGetWidth(), 500, 10000);
+    resFreq = mappedX;
+    cout << resFreq << endl;
+}
+
+//--------------------------------------------------------------
+void ofApp::exit(){
+    ofSoundStreamClose();
+}
+
+//--------------------------------------------------------------
+
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
     for (unsigned i = 0; i < bufferSize; i++) {
         
@@ -133,17 +146,13 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
             break;
         }
         
-        double delayedSound = delay.dl(sound, 2000, 0.8);
-        double loresSound = filter.lores(delayedSound, 4000, 0.06);
-        float distortedSound = foldback(loresSound, 0.04);
-
-        distortedSound = ofClamp(distortedSound, -1 ,1);
-        //loresSound = ofClamp(loresSound , -1, 1);
+        double delayedSound = ofClamp(delay.dl(sound, 2000, 0.4), -1,1);
+        double loresSound = ofClamp(filter.lores(delayedSound, 4000, 0.06), -1,1);
+        float distortedSound = ofClamp(foldback(loresSound, 0.0004),-1,1);
+        
         output[i*nChannels] = distortedSound * amp;
         output[i*nChannels + 1] = output[i*nChannels];
     }
-    
-
 }
 
 //--------------------------------------------------------------
@@ -177,15 +186,14 @@ void ofApp::onDropdownEvent(ofxDatGuiDropdownEvent e)
     
     if(guiLabel == "Ring Topology"){
         topology = 0;
+        isElitest = 0;
     } else if (guiLabel == "Ring Topology"){
         topology = 1;
+        isElitest = 0;
     } else if (guiLabel == "Closest Topology"){
         topology = 2;
+        isElitest = 0;
+    } else if (guiLabel == "Elitest Approach"){
+        isElitest = 1;
     }
-
-}
-
-
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
 }

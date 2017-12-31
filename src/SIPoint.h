@@ -59,15 +59,15 @@ public:
     }
     
     ofVec2f getDistance2Vec(vector<double> point){
-        double xDist = pos[0] - point[0];
-        double yDist = pos[1] - point[1];
+        double xDist = pow(pos[0] - point[0],2);
+        double yDist = pow(pos[1] - point[1],2);
         return ofVec2f(xDist, yDist);
     }
 
     double output(double param1, double param2, double param3){
         switch(type){
             case 0:
-                return osc.sinewave((param1*param2)*param3);
+                return ofClamp(osc.sinewave((param1*param2)*param3),-1,1);
             break;
         }
         return 0;

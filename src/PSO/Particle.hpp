@@ -23,7 +23,6 @@ public:
         pBest = vel;
     }
     
- 
     vector<double> getVel(){
         return vel;
     }

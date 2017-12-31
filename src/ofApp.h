@@ -18,15 +18,15 @@ class ofApp : public ofBaseApp {
 		void setup();
 		void update();
         void draw();
-    
-        void onSliderEvent(ofxDatGuiSliderEvent e);
-        void onDropdownEvent(ofxDatGuiDropdownEvent e);
+        void mouseMoved(int x, int y);
+        void exit();
     
         void audioOut(float * output, int bufferSize, int nChannels);
         double foldback(double in, double threshold);
     
-		void keyPressed(int key);
-    
+        void onSliderEvent(ofxDatGuiSliderEvent e);
+        void onDropdownEvent(ofxDatGuiDropdownEvent e);
+        
         void drawOpticalFlow() {
             drawOpticalFlow(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
         }
@@ -40,6 +40,8 @@ class ofApp : public ofBaseApp {
     //ofVideoPlayer video;
     ofVideoGrabber video;
     ftFbo cameraFbo;
+    
+    double resFreq;
 
     // FlowTools
     int flowWidth;
@@ -56,8 +58,8 @@ class ofApp : public ofBaseApp {
 
     int siAlgo;
     int topology;
-    float dt;
-    double y = 0.0;
+    int isElitest;
+    double dt;
     
     // Save velocity inti
     ofPixels velocityPix;
@@ -71,6 +73,6 @@ class ofApp : public ofBaseApp {
     int sampleRate = 44100;
     int bufferSize = 512;
     float sound;
-    float amp = 0.9;
+    float amp = 0.8;
     float thres = 0.6;
 };
