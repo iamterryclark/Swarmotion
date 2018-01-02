@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofSetFrameRate(50);
+    ofSetFrameRate(60);
     ofSetVerticalSync(false);
     ofSetLogLevel(OF_LOG_NOTICE);
     
@@ -41,14 +41,16 @@ void ofApp::setup(){
     vector<string> algoOptions = { "DFO", "PSO"};
     gui->addDropdown("Pick Algorithm", algoOptions);
     gui->addBreak();
-    vector<string> topOptions = { "Ring Topology", "Random Topology", "Closest Topology", "Elitest Approach" };
+    vector<string> topOptions = { "Ring Topology", "Random Topology", "Closest Topology", "Elitist Approach" };
     gui->addDropdown("Select Topology", topOptions);
     gui->addBreak();
     gui->addSlider("Disturb", 0.001, 0.09, 0.001);
+    gui->addToggle("Mute Sound");
     gui->addFooter();
     
     gui->onDropdownEvent(this, &ofApp::onDropdownEvent);
     gui->onSliderEvent(this, &ofApp::onSliderEvent);
+    gui->onToggleEvent(this, &ofApp::onToggleEvent);
     
     // if the settings file is not present the parameters will not be set during this setup
     if (!ofFile("settings.xml"))
@@ -82,10 +84,12 @@ void ofApp::update(){
         switch(siAlgo){
             case 0:
                 //Only need .getColor().r and .getColour.g from "velocityPix", as this is equal to x and y of velocity
-                dfo.find(velocityPix, topology, dt, isElitest);
+                dfo.find(velocityPix, topology, dt, isElitist);
+                //cout << dfo.swarm[dfo.bestIndex]->getFitness() << endl;
                 break;
             case 1:
-                pso.find(velocityPix, topology, dt, isElitest);
+                pso.find(velocityPix, topology, dt, isElitist);
+                //cout << pso.particles[dfo.bestIndex]->getFitness() << endl;
                 break;
         }
     }
@@ -96,7 +100,7 @@ void ofApp::update(){
 void ofApp::draw(){
     ofBackground(0);
     
-    cameraFbo.draw(200,0, drawWidth, drawHeight);
+    cameraFbo.draw(200,drawHeight, drawWidth, drawHeight);
     
     ofPushStyle();
     {
@@ -105,7 +109,7 @@ void ofApp::draw(){
                 ofColor color = velocityPix.getColor(x,y);
                 ofSetColor(color);
                 ofFill();
-                ofDrawRectangle((ofGetWidth() + x*4) - drawWidth, drawHeight + y*4, 4,  4);
+                ofDrawRectangle((ofGetWidth() + x*4) - drawWidth, y*4, 4,  4);
             }
         }
     }
@@ -117,14 +121,10 @@ void ofApp::draw(){
     }
     
     guiMotionTrack.draw();
-}
-
-//--------------------------------------------------------------
-
-void ofApp::mouseMoved(int x, int y){
-    double mappedX = ofMap(x, 0, ofGetWidth(), 500, 10000);
-    resFreq = mappedX;
-    cout << resFreq << endl;
+    
+    
+    ofDrawBitmapString("Motion Feed", 220, 20);
+    ofDrawBitmapString("Webcam Feed", 220, drawHeight + 20);
 }
 
 //--------------------------------------------------------------
@@ -143,15 +143,21 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
             break;
             case 1:
                 sound = pso.output();
+                
             break;
         }
         
         double delayedSound = ofClamp(delay.dl(sound, 2000, 0.4), -1,1);
-        double loresSound = ofClamp(filter.lores(delayedSound, 4000, 0.06), -1,1);
+        double loresSound = ofClamp(filter.lores(delayedSound, 3000, 0.06), -1,1);
         float distortedSound = ofClamp(foldback(loresSound, 0.0004),-1,1);
         
-        output[i*nChannels] = distortedSound * amp;
-        output[i*nChannels + 1] = output[i*nChannels];
+        if (mute){
+            output[i*nChannels] = 0.0;
+            output[i*nChannels + 1] = 0.0;
+        } else if (!mute) {
+            output[i*nChannels] = distortedSound * amp;
+            output[i*nChannels + 1] = output[i*nChannels];
+        }
     }
 }
 
@@ -186,14 +192,34 @@ void ofApp::onDropdownEvent(ofxDatGuiDropdownEvent e)
     
     if(guiLabel == "Ring Topology"){
         topology = 0;
-        isElitest = 0;
-    } else if (guiLabel == "Ring Topology"){
+        isElitist = 0;
+    } else if (guiLabel == "Random Topology"){
         topology = 1;
-        isElitest = 0;
+        isElitist = 0;
     } else if (guiLabel == "Closest Topology"){
         topology = 2;
-        isElitest = 0;
+        isElitist = 0;
     } else if (guiLabel == "Elitest Approach"){
-        isElitest = 1;
+        isElitist = 1;
+        if (siAlgo == 0){
+            for (auto & f : dfo.swarm){
+                f->setPos(0, ofRandom(120));
+                f->setPos(1, ofRandom(90));
+            }
+        } else if(siAlgo == 1){
+            for (auto & p : pso.particles){
+                p->setPos(0, ofRandom(120));
+                p->setPos(1, ofRandom(90));
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::onToggleEvent(ofxDatGuiToggleEvent e){
+    string guiLabel = e.target->getLabel();
+    
+    if(guiLabel == "Mute Sound"){
+        mute = e.target->getChecked();
     }
 }

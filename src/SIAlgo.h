@@ -13,7 +13,7 @@
 class SIAlgo {
 public:
     
-    virtual void find(ofPixels &searchSpace, int topology, float dt, int isElitest) = 0;
+    virtual void find(ofPixels &searchSpace, int topology, float dt, int isElitist) = 0;
     virtual void render(ofPixels &searchSpace) = 0;
     virtual double output() = 0;
     
@@ -21,7 +21,6 @@ public:
         //2 Part Fitness function
         float a = 255 - _velocity.x;
         float b = 255 - _velocity.y;
-        //cout << a << " " << b << endl;
         return (a + b)/2;
     }
     

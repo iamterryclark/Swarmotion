@@ -11,25 +11,29 @@
 
 class PSO : public SIAlgo {
 private:
-    vector<Particle *> particles;
+   
     vector<double> globalBest = {0.0, 0.0};
+    vector<Particle> storedNeighbour;
     int bestIndex = 0;
     float sound;
     double X = 0.72984;
     double c1 = X * (2.1/2);
     double c2 = c1;
+    int isElite;
     
 public:
+    vector<Particle *> particles;
     PSO(int population){
         for (int i = 0; i < population; i++){
             particles.push_back(new Particle(2));
+            storedNeighbour.push_back(Particle(2));
             particles[i]->setPos(0, ofRandom(0, 120));
             particles[i]->setPos(1, ofRandom(0, 90));
         }
     }
     
-    void find(ofPixels &searchSpace, int topology, float dt, int isElitest){
-        
+    void find(ofPixels &searchSpace, int topology, float dt, int isElitist){
+        isElite = isElitist;
         int index = 0;
         for(auto & p : particles){
         
@@ -117,20 +121,24 @@ public:
             double leftFit = particles[leftN]->getFitness();
             double rightFit = particles[rightN]->getFitness();
             
-            Particle bestNeighbour = (particles[leftN]->getFitness() < particles[rightN]->getFitness()) ? *particles[leftN] : *particles[rightN];
-        
+            Particle bestNeighbour = (particles[leftN]->getFitness() < particles[rightN]->getFitness()) ?
+                                      *particles[leftN] :
+                                      *particles[rightN];
+            
+            storedNeighbour[index] = bestNeighbour;
+            
             //Taken from the DFO algorithm of using a disturbance threshold to improve diversity of algorithm
             if (ofRandom(0, 1) < dt){
                 p->setPos(0, ofRandom(0, searchSpace.getWidth()) );
                 p->setPos(1, ofRandom(0, searchSpace.getHeight()) );
             } else {
-                if (isElitest){
+                if (isElitist){
                     //Standard PSO Variation using contriction which will locate one optima and then become static
                     for (int d = 0; d < p->getDimensions(); d++){
-                        p->setVel(d, X * p->getVel()[d] + c1 * ofRandom(1) * (p->getPBest()[d] - p->getPos()[d]) + c2 * ofRandom(1) * (globalBest[d] - p->getPos()[d]));
+                        p->setVel(d, X * p->getVel()[d] + c1 * ofRandom(1) * (globalBest[d] - p->getPos()[d]) + c2 * ofRandom(1) * (globalBest[d] - p->getPos()[d]));
                         p->setPos(d, p->getPos()[d] + p->getVel()[d] );
                     }
-                } else if (!isElitest){
+                } else if (!isElitist){
                     //Standard PSO Variation using contriction which will locate one optima and then become static
                     for (int d = 0; d < p->getDimensions(); d++){
                         p->setVel(d, X * p->getVel()[d] + c1 * ofRandom(1) * (p->getPBest()[d] - p->getPos()[d]) + c2 * ofRandom(1) * (bestNeighbour.getPos()[d] - p->getPos()[d]));
@@ -173,12 +181,21 @@ public:
         sound = 0.0;
         
         for (int i = 0 ; i < particles.size(); i++){
-            ofVec2f dist = particles[i]->getDistance2Vec(globalBest);
-            double bestFitness = particles[i]->getGBestFitness();
             
-            dist.x = ofMap(dist.x, 0, ofGetWidth(),  100, 400);
+            ofVec2f dist;
+            double bestFitness;
+            
+            if (isElite){
+                particles[i]->getDistance2Vec(globalBest);
+                bestFitness = particles[i]->getGBestFitness();
+            } else {
+                particles[i]->getDistance2Vec(storedNeighbour[i].getPos());
+                bestFitness = storedNeighbour[i].getFitness();
+            }
+            
+            dist.x = ofMap(dist.x, 0, ofGetWidth(),  100, 300);
             dist.y = ofMap(dist.y, 0, ofGetHeight(), 10, 100);
-            bestFitness = ofMap(bestFitness, 0, 255, 0,100);
+            bestFitness = ofMap(bestFitness, 0, 255, 20, 0);
             
             sound += particles[i]->output(dist.x, dist.y, bestFitness);
         }

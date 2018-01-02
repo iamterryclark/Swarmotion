@@ -18,7 +18,7 @@ class ofApp : public ofBaseApp {
 		void setup();
 		void update();
         void draw();
-        void mouseMoved(int x, int y);
+        //void mouseMoved(int x, int y);
         void exit();
     
         void audioOut(float * output, int bufferSize, int nChannels);
@@ -26,6 +26,7 @@ class ofApp : public ofBaseApp {
     
         void onSliderEvent(ofxDatGuiSliderEvent e);
         void onDropdownEvent(ofxDatGuiDropdownEvent e);
+        void onToggleEvent(ofxDatGuiToggleEvent e);
         
         void drawOpticalFlow() {
             drawOpticalFlow(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
@@ -58,7 +59,7 @@ class ofApp : public ofBaseApp {
 
     int siAlgo;
     int topology;
-    int isElitest;
+    int isElitist;
     double dt;
     
     // Save velocity inti
@@ -75,4 +76,5 @@ class ofApp : public ofBaseApp {
     float sound;
     float amp = 0.8;
     float thres = 0.6;
+    bool mute = false;
 };
