@@ -1,13 +1,13 @@
 <group>
 	<optical_flow>
 		<strength>100</strength>
-		<offset>3</offset>
-		<lambda>0.01</lambda>
-		<threshold>0.0418367</threshold>
+		<offset>10</offset>
+		<lambda>0.210204</lambda>
+		<threshold>0.0316327</threshold>
 		<inverse_x>0</inverse_x>
 		<inverse_y>0</inverse_y>
 		<time_decay_blur>
-			<decay>5.31445</decay>
+			<decay>7.81341</decay>
 			<blur_radius>10</blur_radius>
 		</time_decay_blur>
 	</optical_flow>

@@ -34,8 +34,8 @@ class ofApp : public ofBaseApp {
         void drawOpticalFlow(int _x, int _y, int _width, int _height);
 
     //DFO
-    DFO dfo = DFO(15);
-    PSO pso = PSO(15);
+    DFO dfo = DFO(13);
+    PSO pso = PSO(13);
     
     //Video Source
     //ofVideoPlayer video;

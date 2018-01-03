@@ -143,19 +143,18 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
             break;
             case 1:
                 sound = pso.output();
-                
             break;
         }
         
-        double delayedSound = ofClamp(delay.dl(sound, 2000, 0.4), -1,1);
-        double loresSound = ofClamp(filter.lores(delayedSound, 3000, 0.06), -1,1);
-        float distortedSound = ofClamp(foldback(loresSound, 0.0004),-1,1);
+        double delayedSound = delay.dl(sound, 2000, 0.4);
+        double loresSound = filter.lores(delayedSound, 3000, 0.06);
+        float distortedSound = foldback(loresSound, 0.0004);
         
         if (mute){
             output[i*nChannels] = 0.0;
             output[i*nChannels + 1] = 0.0;
         } else if (!mute) {
-            output[i*nChannels] = distortedSound * amp;
+            output[i*nChannels] = ofClamp(distortedSound * amp, -1,1);
             output[i*nChannels + 1] = output[i*nChannels];
         }
     }
@@ -199,7 +198,7 @@ void ofApp::onDropdownEvent(ofxDatGuiDropdownEvent e)
     } else if (guiLabel == "Closest Topology"){
         topology = 2;
         isElitist = 0;
-    } else if (guiLabel == "Elitest Approach"){
+    } else if (guiLabel == "Elitist Approach"){
         isElitist = 1;
         if (siAlgo == 0){
             for (auto & f : dfo.swarm){

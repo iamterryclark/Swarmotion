@@ -48,7 +48,7 @@ public:
         int index = 0;
         for (auto & fly : swarm){
             //Find the best fly in the swarm
-            if (fly->getFitness() <= bestFitness){
+            if (fly->getFitness() < bestFitness){
                 bestFitness = fly->getFitness();
                 bestIndex = index;
                 //cout << fly.getFitness() << endl;
@@ -144,8 +144,8 @@ public:
                     //Let the search begin!
                     //The next position is based on this formula
                     //The best Neighbouring position + a random value from 0 to 1 multiplied by the best fly in the swarm take away the current position
-                    newPositions.push_back(fly->getPos()[0] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[0] - fly->getPos()[0]));
-                    newPositions.push_back(fly->getPos()[1] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[1] - fly->getPos()[1]));
+                    newPositions.push_back(bestNeighbour.getPos()[0] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[0] - fly->getPos()[0]));
+                    newPositions.push_back(bestNeighbour.getPos()[1] + ofRandom(1.0) * (swarm[bestIndex]->getPos()[1] - fly->getPos()[1]));
                 } else if (!isElitist){
                     //Let the search begin!
                     //The next position is based on this formula
@@ -209,9 +209,7 @@ public:
             sound += swarm[i]->output(dist.x, dist.y, bestFitness);
         }
         
-        sound /= swarm.size();
-        sound = ofClamp(sound, -1, 1);
-        
+        sound /= swarm.size();        
         return sound;
     }
 };

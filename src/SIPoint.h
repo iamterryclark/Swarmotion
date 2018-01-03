@@ -67,7 +67,7 @@ public:
     double output(double param1, double param2, double param3){
         switch(type){
             case 0:
-                return ofClamp(osc.sinewave((param1*param2)*param3),-1,1);
+                return osc.sinewave( (param1*param2)*param3 );
             break;
         }
         return 0;

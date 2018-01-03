@@ -11,18 +11,18 @@
 
 class PSO : public SIAlgo {
 private:
-   
-    vector<double> globalBest = {0.0, 0.0};
-    vector<Particle> storedNeighbour;
-    int bestIndex = 0;
-    float sound;
     double X = 0.72984;
     double c1 = X * (2.1/2);
     double c2 = c1;
-    int isElite;
     
 public:
     vector<Particle *> particles;
+    vector<double> globalBest = {0.0, 0.0};
+    vector<Particle> storedNeighbour;
+    double sound;
+    int bestIndex = 0;
+    int isElite;
+    
     PSO(int population){
         for (int i = 0; i < population; i++){
             particles.push_back(new Particle(2));
@@ -44,11 +44,11 @@ public:
             
             // If the fitness value is better than the best fitness value (pBest) in history
             // set current value as the new pBest
-            if (p->getFitness() <= p->getPBestFitness() ){
+            if (p->getFitness() < p->getPBestFitness() ){
                 p->setPBest(p->getPos());
             }
             
-            if (p->getPBestFitness() <= p->getGBestFitness() ){
+            if (p->getPBestFitness() < p->getGBestFitness() ){
                 globalBest = p->getPBest();
                 bestIndex = index;
             }
@@ -135,7 +135,7 @@ public:
                 if (isElitist){
                     //Standard PSO Variation using contriction which will locate one optima and then become static
                     for (int d = 0; d < p->getDimensions(); d++){
-                        p->setVel(d, X * p->getVel()[d] + c1 * ofRandom(1) * (globalBest[d] - p->getPos()[d]) + c2 * ofRandom(1) * (globalBest[d] - p->getPos()[d]));
+                        p->setVel(d, X * p->getVel()[d] + c1 * ofRandom(1) * (p->getPBest()[d] - p->getPos()[d]) + c2 * ofRandom(1) * (globalBest[d] - p->getPos()[d]));
                         p->setPos(d, p->getPos()[d] + p->getVel()[d] );
                     }
                 } else if (!isElitist){
@@ -146,7 +146,8 @@ public:
                     }
                 }
             }
-        
+            p->setVel(0, abs(p->getVel()[0]));
+            p->setVel(1, abs(p->getVel()[1]));
             p->setPos(0, ofClamp(p->getPos()[0], 1, searchSpace.getWidth()-1) );
             p->setPos(1, ofClamp(p->getPos()[1], 1, searchSpace.getHeight()-1) );
         }
@@ -186,7 +187,7 @@ public:
             double bestFitness;
             
             if (isElite){
-                particles[i]->getDistance2Vec(globalBest);
+                particles[i]->getDistance2Vec(particles[bestIndex]->getPos());
                 bestFitness = particles[i]->getGBestFitness();
             } else {
                 particles[i]->getDistance2Vec(storedNeighbour[i].getPos());
@@ -195,14 +196,12 @@ public:
             
             dist.x = ofMap(dist.x, 0, ofGetWidth(),  100, 300);
             dist.y = ofMap(dist.y, 0, ofGetHeight(), 10, 100);
-            bestFitness = ofMap(bestFitness, 0, 255, 20, 0);
+            bestFitness = ofMap(bestFitness, 0, 255, 10, 0);
             
             sound += particles[i]->output(dist.x, dist.y, bestFitness);
         }
         
         sound /= particles.size();
-        sound = ofClamp(sound, -1, 1);
-        
         return sound;
     }
     
